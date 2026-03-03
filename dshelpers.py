@@ -177,7 +177,9 @@ def _download_with_backoff(url, **kwargs):
 def _is_url_in_cache(*args, **kwargs):
     """Return True if request has been cached or False otherwise."""
     # Only include allowed arguments for a PreparedRequest.
-    allowed_args = inspect.getargspec(requests.models.PreparedRequest.prepare).args
+    allowed_args = list(
+        inspect.signature(requests.models.PreparedRequest.prepare).parameters
+    )
     # self is in there as .prepare() is a method.
     allowed_args.remove("self")
 
