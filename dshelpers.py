@@ -4,7 +4,6 @@
 import datetime
 import inspect
 import logging
-import socket
 import time
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -166,7 +165,7 @@ def _download_with_backoff(url, **kwargs):
     for n in range(0, _MAX_RETRIES):
         try:
             return _download_without_backoff(url, **kwargs)
-        except (requests.exceptions.RequestException, socket.timeout) as e:
+        except (requests.exceptions.RequestException, TimeoutError) as e:
             L.exception(e)
             L.info(f"Retrying in {next_delay} seconds: {url}")
             time.sleep(next_delay)
