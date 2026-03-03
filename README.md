@@ -1,8 +1,7 @@
 data-services-helpers
 =====================
 
-A module containing classes and functions that [The Sensible Code Company's](http://sensiblecode.io) Data Services
-often uses.
+A module containing classes and functions previously used by [The Sensible Code Company's](https://sensiblecode.io) Data Services team.
 
 ## Installation
 
