@@ -22,11 +22,14 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
 
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+
       - name: Install packages
-        run: pip install -r requirements.txt -r requirements-dev.txt
+        run: uv sync --dev
 
       - name: Check code
-        run: make check
+        run: uv run make check
 
       - name: Run tests
-        run: pytest dshelpers.py
+        run: uv run pytest
