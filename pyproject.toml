@@ -5,16 +5,15 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dshelpers"
 version = "2.0.0"
-description = "Provides some helper functions previously used by Cantabular's Data Services team."
+description = "Provides some helper functions previously used by The Sensible Code Company's Data Services team."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "BSD-3-Clause"
 authors = [{ name = "Cantabular Ltd", email = "dataservices@sensiblecode.io" }]
 dependencies = [
-  "pytest",
-  "requests>=1.2.0",
-  "requests-cache>=0.9.7",
-  "scraperwiki>=0.3.2",
+  "requests>=2.31.0",
+  "requests-cache>=1.3.0",
+  "scraperwiki>=1.0.0",
 ]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
@@ -34,6 +33,12 @@ Homepage = "https://github.com/cantabular/data-services-helpers"
 
 [tool.setuptools]
 py-modules = ["dshelpers"]
+
+[dependency-groups]
+dev = [
+  "pytest>=9.0.2",
+  "ruff>=0.15.4",
+]
 
 [tool.ruff]
 line-length = 88
