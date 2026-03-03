@@ -59,4 +59,4 @@ As `download_url`, but returns the `response` object.
 
 ## Tests
 
-Run with `pytest dshelpers.py`.
+Run with `pytest`.
