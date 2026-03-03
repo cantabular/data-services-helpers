@@ -1,13 +1,12 @@
 check:
-	black --check .
-	isort --check-only .
-	flake8
+	ruff format --check .
+	ruff check .
 
 format:
-	black .
-	isort .
+	ruff format .
+	ruff check --fix .
 
 lint:
-	flake8
+	ruff check .
 
 .PHONY: check format lint

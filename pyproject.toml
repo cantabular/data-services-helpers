@@ -34,3 +34,9 @@ Homepage = "https://github.com/cantabular/data-services-helpers"
 
 [tool.setuptools]
 py-modules = ["dshelpers"]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+extend-select = ["A", "I", "UP", "W"]
