@@ -1,6 +1,0 @@
-# Use pip install -r requirements.txt to install
-
-pytest
-requests>=1.2.0
-requests-cache>=0.9.7
-scraperwiki>=0.3.2
