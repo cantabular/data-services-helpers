@@ -3,6 +3,12 @@ data-services-helpers
 
 A module containing classes and functions previously used by [The Sensible Code Company's](https://sensiblecode.io) Data Services team.
 
+(The Sensible Code Company is now [Cantabular Ltd](https://github.com/cantabular).)
+
+**Warning: This is now in maintenance mode.**
+
+**It has been updated to work with Python 3.14 but there are no guarantees on future maintenance.**
+
 ## Installation
 
 For the current release:
@@ -58,4 +64,4 @@ As `download_url`, but returns the `response` object.
 
 ## Tests
 
-Run with `pytest`.
+Run with `make test`.
