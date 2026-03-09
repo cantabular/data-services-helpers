@@ -28,8 +28,11 @@ jobs:
       - name: Install packages
         run: uv sync --dev
 
-      - name: Check code
-        run: uv run make check
+      - name: Check formatting
+        run: make check-format
+
+      - name: Check linting
+        run: make check-fix
 
       - name: Run tests
-        run: uv run pytest
+        run: make test
