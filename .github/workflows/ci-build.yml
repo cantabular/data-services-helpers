@@ -5,13 +5,16 @@ on:
         - master
     pull_request:
 
+env:
+  PYTHON_BUILD_VERSION: '3.14'
+
 jobs:
   build:
     name: Build and Test
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - name: Checkout code
@@ -20,7 +23,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ matrix.python-version }}
 
       - name: Setup uv
         uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098 # v7.3.1
@@ -36,3 +39,13 @@ jobs:
 
       - name: Run tests
         run: make test
+
+      - name: Build package
+        run: uv build
+
+      - name: Upload artifacts
+        if: matrix.python-version == env.PYTHON_BUILD_VERSION
+        uses: actions/upload-artifact@v7
+        with:
+          name: python-package-distributions
+          path: dist/
