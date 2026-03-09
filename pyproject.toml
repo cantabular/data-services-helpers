@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dshelpers"
-version = "2.0.0"
+version = "2.0.1"
 description = "Provides some helper functions previously used by The Sensible Code Company's Data Services team."
 readme = "README.md"
 requires-python = ">=3.10"
