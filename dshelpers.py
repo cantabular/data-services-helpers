@@ -129,12 +129,7 @@ def _download_without_backoff(url, as_file=True, method="GET", **kwargs):
             kwargs[k] = OrderedDict(sorted(kwargs[k].items()))
 
     kwargs_copy = dict(kwargs)
-    if not _is_url_in_cache(method, url, **kwargs):
-        now = datetime.datetime.now()
-        _rate_limit_for_url(url, now)
-        _rate_limit_touch_url(url, now)
 
-    L.info(f"Download {url}")
     if "timeout" not in kwargs_copy:
         kwargs_copy["timeout"] = _TIMEOUT
     if "headers" in kwargs_copy:
@@ -144,6 +139,13 @@ def _download_without_backoff(url, as_file=True, method="GET", **kwargs):
         kwargs_copy["headers"] = head_dict
     else:
         kwargs_copy["headers"] = CaseInsensitiveDict({"user-agent": _USER_AGENT})
+
+    if not _is_url_in_cache(method, url, **kwargs_copy):
+        now = datetime.datetime.now()
+        _rate_limit_for_url(url, now)
+        _rate_limit_touch_url(url, now)
+
+    L.info(f"Download {url}")
 
     response = requests.request(method, url, **kwargs_copy)
 
@@ -176,39 +178,22 @@ def _download_with_backoff(url, **kwargs):
 
 def _is_url_in_cache(*args, **kwargs):
     """Return True if request has been cached or False otherwise."""
-    # Only include allowed arguments for a PreparedRequest.
-    allowed_args = list(
-        inspect.signature(requests.models.PreparedRequest.prepare).parameters
+    session = requests.Session()
+
+    if getattr(session, "cache", None) is None:
+        return False
+
+    valid_request_kwargs = set(
+        inspect.signature(requests.Request.__init__).parameters.keys()
     )
-    # self is in there as .prepare() is a method.
-    allowed_args.remove("self")
 
-    kwargs_cleaned = {}
-    for key, value in dict(kwargs).items():
-        if key in allowed_args:
-            kwargs_cleaned[key] = value
+    kwargs_cleaned = {k: v for k, v in kwargs.items() if k in valid_request_kwargs}
 
-    prepared_request = _prepare(*args, **kwargs_cleaned)
-    request_hash = _get_hash(prepared_request)
-    try:
-        return requests_cache.get_cache().contains(key=request_hash)
-    except AttributeError as e:  # requests_cache not enabled
-        if str(e) == "'NoneType' object has no attribute 'contains'":
-            return False
-        raise
+    req = requests.Request(*args, **kwargs_cleaned)
+    prepared_request = session.prepare_request(req)
 
-
-def _get_hash(prepared_request):
-    """Create requests_cache key from a prepared Request."""
-    # TODO: This should use whatever requests_cache is monkeypatching into
-    # requests. Not sure how to discover this. In practice, all backends
-    # use BaseCache's implementation.
-    return requests_cache.backends.base.BaseCache().create_key(prepared_request)
-
-
-def _prepare(*args, **kwargs):
-    """Return a prepared Request."""
-    return requests.Request(*args, **kwargs).prepare()
+    request_hash = session.cache.create_key(prepared_request)
+    return session.cache.contains(key=request_hash)
 
 
 def _rate_limit_for_url(url, now=datetime.datetime.now()):
