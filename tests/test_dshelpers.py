@@ -229,3 +229,31 @@ def test_download_url_sets_user_agent(mock_request):
     )
 
     assert [expected_call] == mock_request.call_args_list
+
+
+@patch("time.sleep")
+@patch("dshelpers._is_url_in_cache")
+@patch("dshelpers.requests.request")
+def test_rate_limit_bypassed_on_cache_hit(mock_request, mock_is_in_cache, mock_sleep):
+    fake_response = requests.Response()
+    fake_response.status_code = 200
+    fake_response._content = b"Hello"
+    mock_request.return_value = fake_response
+
+    previous_time = datetime.datetime.now() - datetime.timedelta(seconds=1)
+
+    with patch.dict(_LAST_TOUCH, {"fake_url.com": previous_time}, clear=True):
+        # Cache miss
+        mock_is_in_cache.return_value = False
+        _download_without_backoff("http://fake_url.com")
+
+        # Because it's a miss and we hit it recently, the rate limiter must trigger.
+        mock_sleep.assert_called_once()
+        mock_sleep.reset_mock()
+
+        # Cache hit
+        mock_is_in_cache.return_value = True
+        _download_without_backoff("http://fake_url.com")
+
+        # Because it's a hit, the rate limiter logic is skipped entirely!
+        mock_sleep.assert_not_called()
