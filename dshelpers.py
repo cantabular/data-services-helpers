@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-
 import datetime
 import inspect
 import logging
@@ -27,11 +24,11 @@ _LAST_TOUCH = {}  # domain name => datetime
 _USER_AGENT = "ScraperWiki Limited (bot@scraperwiki.com)"
 
 __all__ = [
-    "install_cache",
-    "download_url",
-    "request_url",
-    "rate_limit_disabled",
     "batch_processor",
+    "download_url",
+    "install_cache",
+    "rate_limit_disabled",
+    "request_url",
 ]
 
 
@@ -141,7 +138,7 @@ def _download_without_backoff(url, as_file=True, method="GET", **kwargs):
         kwargs_copy["headers"] = CaseInsensitiveDict({"user-agent": _USER_AGENT})
 
     if not _is_url_in_cache(method, url, **kwargs_copy):
-        now = datetime.datetime.now()
+        now = datetime.datetime.now(datetime.timezone.utc)
         _rate_limit_for_url(url, now)
         _rate_limit_touch_url(url, now)
 
@@ -164,7 +161,7 @@ def _download_without_backoff(url, as_file=True, method="GET", **kwargs):
 def _download_with_backoff(url, **kwargs):
     next_delay = 10
 
-    for n in range(0, _MAX_RETRIES):
+    for n in range(_MAX_RETRIES):
         try:
             return _download_without_backoff(url, **kwargs)
         except (requests.exceptions.RequestException, TimeoutError) as e:
@@ -196,10 +193,13 @@ def _is_url_in_cache(*args, **kwargs):
     return session.cache.contains(key=request_hash)
 
 
-def _rate_limit_for_url(url, now=datetime.datetime.now()):
-    """ """
+def _rate_limit_for_url(url, now=None):
+    if now is None:
+        now = datetime.datetime.now(datetime.timezone.utc)
+
     if not _RATE_LIMIT_ENABLED:
         return
+
     domain = _get_domain(url)
     last_touch = _LAST_TOUCH.get(domain)
 
@@ -213,7 +213,7 @@ def _rate_limit_for_url(url, now=datetime.datetime.now()):
 
 def _rate_limit_touch_url(url, now=None):
     if now is None:
-        now = datetime.datetime.now()
+        now = datetime.datetime.now(datetime.timezone.utc)
     domain = _get_domain(url)
     L.debug(f"Recording hit for domain {domain} at {now}")
     _LAST_TOUCH[domain] = now

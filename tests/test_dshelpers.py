@@ -22,7 +22,7 @@ from dshelpers import (
 
 
 def test_rate_limit_touch_url_works():
-    time = datetime.datetime(2010, 11, 1, 10, 15, 30)
+    time = datetime.datetime(2010, 11, 1, 10, 15, 30, tzinfo=datetime.timezone.utc)
 
     with patch.dict(_LAST_TOUCH, {}, clear=True):
         assert {} == _LAST_TOUCH
@@ -32,7 +32,9 @@ def test_rate_limit_touch_url_works():
 
 @patch("time.sleep")
 def test_rate_limit_no_sleep_if_outside_period(mock_sleep):
-    previous_time = datetime.datetime(2013, 10, 1, 10, 15, 30)
+    previous_time = datetime.datetime(
+        2013, 10, 1, 10, 15, 30, tzinfo=datetime.timezone.utc
+    )
 
     with patch.dict(_LAST_TOUCH, {}, clear=True):
         _rate_limit_touch_url("http://foo.com/bar", now=previous_time)
@@ -46,7 +48,9 @@ def test_rate_limit_no_sleep_if_outside_period(mock_sleep):
 
 @patch("time.sleep")
 def test_rate_limit_sleeps_up_to_correct_period(mock_sleep):
-    previous_time = datetime.datetime(2013, 10, 1, 10, 15, 30)
+    previous_time = datetime.datetime(
+        2013, 10, 1, 10, 15, 30, tzinfo=datetime.timezone.utc
+    )
 
     with patch.dict(_LAST_TOUCH, {}, clear=True):
         _rate_limit_for_url("http://foo.com/bar", now=previous_time)
@@ -186,9 +190,8 @@ def test_backoff_raises_on_five_failures(mock_request, mock_sleep):
 
     mock_request.return_value = fake_response
 
-    with rate_limit_disabled():
-        with pytest.raises(RuntimeError):
-            _download_with_backoff("http://fake_url.com")
+    with rate_limit_disabled(), pytest.raises(RuntimeError):
+        _download_with_backoff("http://fake_url.com")
 
     assert [
         call(10),
@@ -240,7 +243,9 @@ def test_rate_limit_bypassed_on_cache_hit(mock_request, mock_is_in_cache, mock_s
     fake_response._content = b"Hello"
     mock_request.return_value = fake_response
 
-    previous_time = datetime.datetime.now() - datetime.timedelta(seconds=1)
+    previous_time = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
+        seconds=1
+    )
 
     with patch.dict(_LAST_TOUCH, {"fake_url.com": previous_time}, clear=True):
         # Cache miss
